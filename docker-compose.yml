@@ -1,37 +1,38 @@
 version: '3.4'
 
 networks:
-  trading_dev: {}
+  external: 
+    name: qoestream-platform_backend
 
 volumes:
-  trading_api_data: {}
+  trade_exporter_data: {}
 
 services: 
-  trading-api:
+  trade-exporter:
     build:
       context: ./
       dockerfile: .docker/api.dev.dockerfile
-    container_name: trading_dev_api
+    container_name: trade_exporter
     working_dir: /var/www
     volumes: 
       - ./:/var/www
       # - /var/www/node_modules
     command: npm start
     networks:
-      - trading_dev
+      - qoestream-platform_backend
     ports:
       - 3010:3010
 
-  trading-proxy:
-    build:
-      context: ./
-      dockerfile: .docker/nginx.dev.dockerfile
-    container_name: trading_dev_proxy
-    depends_on:
-      - trading-api
-    volumes:
-      - trading_api_data:/var/www
-    networks: 
-      - trading_dev
-    ports:
-      - 9000:443
+  # trade-exporter-proxy:
+  #   build:
+  #     context: ./
+  #     dockerfile: .docker/nginx.dev.dockerfile
+  #   container_name: trade_exporter_proxy
+  #   depends_on:
+  #     - trade-exporter
+  #   volumes:
+  #     - trade_exporter_data:/var/www
+  #   networks: 
+  #     - qoestream-platform_backend
+  #   ports:
+  #     - 9000:443
