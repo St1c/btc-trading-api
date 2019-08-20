@@ -6,7 +6,8 @@ networks:
       name: qoestream-platform_backend
 
 volumes:
-  trade_exporter_data: {}
+  trade_exporter_data: 
+    name: trade_exporter_data
 
 services: 
   trade-exporter:
