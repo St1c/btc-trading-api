@@ -1,0 +1,25 @@
+{
+  "name": "btc-trading-api",
+  "version": "1.0.0",
+  "description": "Api for BTC trading analysis",
+  "main": "index.js",
+  "scripts": {
+    "start": "pm2 start ecosystem.config.js -i 1 --no-daemon --watch",
+    "start:production": "pm2 start ecosystem.config.js --env production --no-daemon",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "bruno.gardlo@gmail.com",
+  "license": "ISC",
+  "dependencies": {
+    "@slack/web-api": "^5.1.0",
+    "dotenv": "^8.0.0",
+    "koa": "^2.7.0",
+    "koa-bodyparser": "^4.2.1",
+    "koa-router": "^7.4.0",
+    "koa-socket-2": "^1.2.0",
+    "node-pushover": "^0.2.2",
+    "request": "^2.88.0",
+    "rxjs": "^6.5.2",
+    "websocket": "^1.0.29"
+  }
+}
