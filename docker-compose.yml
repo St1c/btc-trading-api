@@ -1,8 +1,9 @@
 version: '3.4'
 
 networks:
-  external: 
-    name: qoestream-platform_backend
+  backend:
+    external: 
+      name: qoestream-platform_backend
 
 volumes:
   trade_exporter_data: {}
@@ -19,7 +20,7 @@ services:
       # - /var/www/node_modules
     command: npm start
     networks:
-      - qoestream-platform_backend
+      - backend
     ports:
       - 3010:3010
 
@@ -33,6 +34,6 @@ services:
   #   volumes:
   #     - trade_exporter_data:/var/www
   #   networks: 
-  #     - qoestream-platform_backend
+  #     - backend
   #   ports:
   #     - 9000:443
