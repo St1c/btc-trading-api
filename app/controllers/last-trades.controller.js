@@ -115,7 +115,7 @@ function processLiveTrades(data) {
 
         notify(`DOWN: ${ decreaseRelativeToMax }% decrease from ${ max }$ to: ${ data.price }$`);
         notifySlack(`<@UM53EKDS5> DOWN: ${decreaseRelativeToMax}% decrease from ${max}$ to: ${data.price}$`, -1);
-        notifyPusher(`DOWN: ${decreaseRelativeToMax}% from ${max}$ to ${data.price}$`, -1);
+        notifyPusher(`DOWN: ${decreaseRelativeToMax}% from ${max}$ to ${data.price}$`, decreaseRelativeToMax, -1);
     };
     if (increaseRelativeToMin > allowedPercentageChange && increaseRelativeToNotifiedMin >= allowedPercentageChange) {
         lastMinInNotification = data.price;
@@ -125,7 +125,7 @@ function processLiveTrades(data) {
         });
         notify(`UP: ${increaseRelativeToMin}% increase from ${min}$ to: ${data.price}$`);
         notifySlack(`<@UM53EKDS5> UP: ${increaseRelativeToMin}% increase from ${min}$ to: ${data.price}$`, 1)
-        notifyPusher(`UP: ${increaseRelativeToMin}% from ${min}$ to: ${data.price}$`, 1)
+        notifyPusher(`UP: ${increaseRelativeToMin}% from ${min}$ to: ${data.price}$`, increaseRelativeToMin, 1)
     };
 
     priceHistory.push({ timestamp: data.timestamp, price: data.price });
@@ -169,13 +169,13 @@ function notifySlack(message, type) {
     }
 }
 
-function notifyPusher(message, type) {
+function notifyPusher(message, change, type) {
     let timeLimit = 1 * 60 * 1000;
     let now = Date.now();
 
     if (!lastNotificationTimePush || (now - lastNotificationTimePush) > timeLimit) {
         lastNotificationTimePush = now;
-        const messsageTitle = type > 0 ? 'BTC Price increase' : 'BTC Price decrease';
+        const messsageTitle = type > 0 ? `BTC Up ${change}` : `BTC Down ${change}`;
         push.send(messsageTitle, message);
     }
 }
