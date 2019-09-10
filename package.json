@@ -10,6 +10,7 @@
   },
   "author": "bruno.gardlo@gmail.com",
   "license": "ISC",
+  "type": "module",
   "dependencies": {
     "@slack/web-api": "^5.1.0",
     "dotenv": "^8.0.0",
@@ -20,6 +21,7 @@
     "node-pushover": "^0.2.2",
     "request": "^2.88.0",
     "rxjs": "^6.5.2",
+    "rxjs-compat": "^6.5.3",
     "websocket": "^1.0.29"
   }
 }

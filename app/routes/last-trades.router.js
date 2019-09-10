@@ -4,6 +4,6 @@ const lastTrades = require('../controllers/last-trades.controller');
 const router = new Router();
 
 router
-    .get('/last-trades', lastTrades.index);
+    .get('/significant-changes', lastTrades.index);
 
 module.exports = router;

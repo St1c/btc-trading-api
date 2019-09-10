@@ -1,8 +1,12 @@
-var WebSocket = require('websocket').w3cwebsocket;
 const { WebClient } = require('@slack/web-api');
 var Pushover = require('node-pushover');
+const bitstampLastTrades = require('./feeds').bitstampLastTrades;
 
 module.exports.index = index;
+
+bitstampLastTrades.subscribe(
+    data => processLiveTrades(data)
+)
 
 const allowedPercentageChange = 1.1;
 var priceHistory = [];
@@ -20,53 +24,9 @@ var push = new Pushover({
     user: process.env.PUSHOVER_USERID
 });
 
-initLiveTrades();
 
 async function index(ctx, next) {
     ctx.body = lastSignificantChanges;
-}
-
-function initLiveTrades() {
-    let ws = new WebSocket("wss://ws.bitstamp.net");
-
-    const subscribeMsg = {
-        "event": "bts:subscribe",
-        "data": {
-            "channel": "live_trades_btcusd"
-        }
-    };
-
-    ws.onopen = () => {
-        ws.send(JSON.stringify(subscribeMsg));
-        console.log('Websocket connection opened');
-    };
-
-    ws.onmessage = (evt) => {
-        let response = JSON.parse(evt.data);
-        /**
-         * This switch statement handles message logic. It processes data in case of trade event
-         * and it reconnects if the server requires.
-         */
-        switch (response.event) {
-            case 'trade': {
-                processLiveTrades(response.data);
-                break;
-            }
-            case 'bts:request_reconnect': {
-                initLiveTrades();
-                break;
-            }
-        }
-
-    };
-
-    /**
-     * In case of unexpected close event, try to reconnect.
-     */
-    ws.onclose = () => {
-        console.log('Websocket connection closed');
-        initLiveTrades();
-    };
 }
 
 function processLiveTrades(data) {
@@ -105,7 +65,7 @@ function processLiveTrades(data) {
         lastIntervalData.direction = data.price > priceHistory[priceHistory.length - 1].price;
     }
 
-    console.log((Date.now() - lastNotificationTime)/1000, decreaseRelativeToMax, decreaseRelativeToNotifiedMax, data.price, max);
+    // console.log((Date.now() - lastNotificationTime)/1000, decreaseRelativeToMax, decreaseRelativeToNotifiedMax, data.price, max);
     if (decreaseRelativeToMax > allowedPercentageChange && decreaseRelativeToNotifiedMax >= allowedPercentageChange) {
         lastMaxInNotification = data.price;
         lastSignificantChanges.unshift({
