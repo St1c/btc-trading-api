@@ -81,6 +81,8 @@ function processOrderBook(data) {
 }
 
 function processOrderBookSnapshot(data) {
+    binanceOrderBookSnapshotReady = true;
+
     let filteredBuffer = binanceOrderBookBuffer.filter(_ => _.u > data.lastUpdateId)
 
     binanceOrderBookBids = [...data.bids];
