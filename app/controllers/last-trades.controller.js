@@ -65,7 +65,7 @@ function processLiveTrades(data) {
         lastIntervalData.direction = data.price > priceHistory[priceHistory.length - 1].price;
     }
 
-    // console.log((Date.now() - lastNotificationTime)/1000, decreaseRelativeToMax, decreaseRelativeToNotifiedMax, data.price, max);
+    console.log((Date.now() - lastNotificationTime)/1000, decreaseRelativeToMax, decreaseRelativeToNotifiedMax, data.price, max);
     if (decreaseRelativeToMax > allowedPercentageChange && decreaseRelativeToNotifiedMax >= allowedPercentageChange) {
         lastMaxInNotification = data.price;
         lastSignificantChanges.unshift({
