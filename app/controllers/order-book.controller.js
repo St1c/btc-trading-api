@@ -1,7 +1,11 @@
-const feeds = require('./feeds');
+const binanceFeed = require('../services/binance-feed');
 
-module.exports.orderLevels = orderLevels;
-module.exports.significantOrders = significantOrders;
+let binanceOrderBookBids = [];
+let binanceOrderBookBuffer = [];
+let binanceOrderBookSnapshotReady = false;
+
+binanceFeed.orderBook.subscribe(processOrderBook);
+binanceFeed.orderBookSnapshot.subscribe(processOrderBookSnapshot);
 
 async function orderLevels(ctx, next) {
     ctx.body = {
@@ -17,23 +21,6 @@ async function significantOrders(ctx, next) {
         ctx.body = { data: bids };
     }
 }
-
-let binanceOrderBookBuffer = [];
-let binanceOrderBookSnapshotReady = false;
-let binanceOrderBookBids = [];
-
-feeds.binanceOrderBook.subscribe(
-    data => processOrderBook(data)
-)
-
-feeds.binanceOrderBookSnapshot.subscribe(
-    data => processOrderBookSnapshot(data)
-)
-
-// setInterval(() => {
-//     createOrderLevels(binanceOrderBookBids);
-// }, 3000);
-
 
 function createOrderLevels(orderBook) {
     if (orderBook.length == 0) return;
@@ -141,3 +128,6 @@ function updateLocalOrderBookLevel(level, levelIndex, diff) {
 function roundToClosestNumber(price, limiter) {
     return Math.round(price / limiter) * limiter;
 }
+
+module.exports.orderLevels = orderLevels;
+module.exports.significantOrders = significantOrders;

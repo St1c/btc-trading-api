@@ -1,10 +1,10 @@
 const { WebClient } = require('@slack/web-api');
 var Pushover = require('node-pushover');
-const bitstampLastTrades = require('./feeds').bitstampLastTrades;
+const bitstampLiveTrades = require('../services/bitstamp-feed').bitstampLiveTrades;
 
 module.exports.index = index;
 
-bitstampLastTrades.subscribe(
+bitstampLiveTrades.subscribe(
     data => processLiveTrades(data)
 )
 
