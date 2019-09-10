@@ -26,16 +26,16 @@ services:
     ports:
       - 3010:3010
 
-  # trade-exporter-proxy:
-  #   build:
-  #     context: ./
-  #     dockerfile: .docker/nginx.dev.dockerfile
-  #   container_name: trade_exporter_proxy
-  #   depends_on:
-  #     - trade-exporter
-  #   volumes:
-  #     - trade_exporter_data:/var/www
-  #   networks: 
-  #     - backend
-  #   ports:
-  #     - 9000:443
+  trade-exporter-proxy:
+    build:
+      context: ./
+      dockerfile: .docker/nginx.dev.dockerfile
+    container_name: trade_exporter_proxy
+    depends_on:
+      - trade-exporter
+    volumes:
+      - trade_exporter_data:/var/www
+    networks: 
+      - backend
+    ports:
+      - 80:80
