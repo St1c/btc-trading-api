@@ -7,6 +7,10 @@ let binanceOrderBookSnapshotReady = false;
 binanceFeed.orderBook.subscribe(processOrderBook);
 binanceFeed.orderBookSnapshot.subscribe(processOrderBookSnapshot);
 
+setInterval(() => {
+    resetOrderBook();
+}, 60000);
+
 async function orderLevels(ctx, next) {
     ctx.body = {
         data: Object.entries(createOrderLevels(binanceOrderBookBids))
@@ -20,6 +24,14 @@ async function significantOrders(ctx, next) {
     } else {
         ctx.body = { data: bids };
     }
+}
+
+function resetOrderBook() {
+    binanceOrderBookBids = [];
+    binanceOrderBookBuffer = [];
+    binanceOrderBookSnapshotReady = false;
+
+    binanceFeed.fetchOrdersBinance();
 }
 
 function createOrderLevels(orderBook) {
@@ -69,8 +81,6 @@ function processOrderBook(data) {
 }
 
 function processOrderBookSnapshot(data) {
-    binanceOrderBookSnapshotReady = true;
-
     let filteredBuffer = binanceOrderBookBuffer.filter(_ => _.u > data.lastUpdateId)
 
     binanceOrderBookBids = [...data.bids];

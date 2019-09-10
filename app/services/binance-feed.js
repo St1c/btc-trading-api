@@ -9,9 +9,6 @@ var request = require('request');
 const orderBook = new Subject();
 const orderBookSnapshot = new Subject();
 
-module.exports.orderBook = orderBook
-module.exports.orderBookSnapshot = orderBookSnapshot
-
 initOrderBook();
 
 function initOrderBook() {
@@ -58,3 +55,7 @@ function fetchOrdersBinance() {
         orderBookSnapshot.next(data)
     });
 }
+
+module.exports.orderBook = orderBook
+module.exports.orderBookSnapshot = orderBookSnapshot
+module.exports.fetchOrdersBinance = fetchOrdersBinance
