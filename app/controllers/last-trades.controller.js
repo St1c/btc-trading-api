@@ -74,8 +74,8 @@ function processLiveTrades(data) {
         });
 
         notify(`DOWN: ${ decreaseRelativeToMax }% decrease from ${ max }$ to: ${ data.price }$`);
-        notifySlack(`<@UM53EKDS5> DOWN: ${decreaseRelativeToMax}% decrease from ${max}$ to: ${data.price}$`, -1);
-        notifyPusher(`DOWN: ${decreaseRelativeToMax}% from ${max}$ to ${data.price}$`, decreaseRelativeToMax, -1);
+        // notifySlack(`<@UM53EKDS5> DOWN: ${decreaseRelativeToMax}% decrease from ${max}$ to: ${data.price}$`, -1);
+        // notifyPusher(`DOWN: ${decreaseRelativeToMax}% from ${max}$ to ${data.price}$`, decreaseRelativeToMax, -1);
     };
     if (increaseRelativeToMin > allowedPercentageChange && increaseRelativeToNotifiedMin >= allowedPercentageChange) {
         lastMinInNotification = data.price;
@@ -84,8 +84,8 @@ function processLiveTrades(data) {
             time, min, max, count, decreaseRelativeToMax, increaseRelativeToMin, price: data.price
         });
         notify(`UP: ${increaseRelativeToMin}% increase from ${min}$ to: ${data.price}$`);
-        notifySlack(`<@UM53EKDS5> UP: ${increaseRelativeToMin}% increase from ${min}$ to: ${data.price}$`, 1)
-        notifyPusher(`UP: ${increaseRelativeToMin}% from ${min}$ to: ${data.price}$`, increaseRelativeToMin, 1)
+        // notifySlack(`<@UM53EKDS5> UP: ${increaseRelativeToMin}% increase from ${min}$ to: ${data.price}$`, 1)
+        // notifyPusher(`UP: ${increaseRelativeToMin}% from ${min}$ to: ${data.price}$`, increaseRelativeToMin, 1)
     };
 
     priceHistory.push({ timestamp: data.timestamp, price: data.price });
@@ -135,7 +135,7 @@ function notifyPusher(message, change, type) {
 
     if (!lastNotificationTimePush || (now - lastNotificationTimePush) > timeLimit) {
         lastNotificationTimePush = now;
-        const messsageTitle = type > 0 ? `BTC Up ${change}` : `BTC Down ${change}`;
+        const messsageTitle = type > 0 ? `BTC Up ${change}%` : `BTC Down ${change}%`;
         push.send(messsageTitle, message);
     }
 }

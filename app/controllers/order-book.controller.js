@@ -1,5 +1,6 @@
 const binanceFeed = require('../services/binance-feed');
 
+let binanceOrderBookAsks = [];
 let binanceOrderBookBids = [];
 let binanceOrderBookBuffer = [];
 let binanceOrderBookSnapshotReady = false;
@@ -13,21 +14,24 @@ setInterval(() => {
 
 async function orderLevels(ctx, next) {
     ctx.body = {
-        data: Object.entries(createOrderLevels(binanceOrderBookBids))
+        bids: Object.entries(createOrderLevels(binanceOrderBookBids)),
+        asks: Object.entries(createOrderLevels(binanceOrderBookAsks))
     };
 }
 
 async function significantOrders(ctx, next) {
     bids = binanceOrderBookBids.filter(_ => parseFloat(_[1]) > 50);
+    asks = binanceOrderBookAsks.filter(_ => parseFloat(_[1]) > 50);
     if (bids.length == 0) {
         ctx.body = { error: 'No significant orders' };
     } else {
-        ctx.body = { data: bids };
+        ctx.body = { bids: bids, asks: asks };
     }
 }
 
 function resetOrderBook() {
     binanceOrderBookBids = [];
+    binanceOrderBookAsks = [];
     binanceOrderBookBuffer = [];
     binanceOrderBookSnapshotReady = false;
 
@@ -71,10 +75,17 @@ function processOrderBook(data) {
 
         let temp = [];
         binanceOrderBookBids.forEach((bid, index) => {
-            const res = updateLocalOrderBookLevel(bid, index, d.b);
+            const res = updateLocalOrderBookLevel(bid, index, d.b, 'bids');
             if (res) temp.push(...res);
         });
         binanceOrderBookBids = JSON.parse(JSON.stringify(temp));
+
+        temp = [];
+        binanceOrderBookAsks.forEach((ask, index) => {
+            const res = updateLocalOrderBookLevel(ask, index, d.a, 'asks');
+            if (res) temp.push(...res);
+        });
+        binanceOrderBookAsks = JSON.parse(JSON.stringify(temp));
 
         console.log('orders after update: ', binanceOrderBookBids.length);
     }
@@ -90,32 +101,41 @@ function processOrderBookSnapshot(data) {
         if (diff.b.length == 0) return;
         let temp = [];
         binanceOrderBookBids.forEach((bid, index) => {
-            const res = updateLocalOrderBookLevel(bid, index, diff.b);
+            const res = updateLocalOrderBookLevel(bid, index, diff.b, 'bids');
             if (res) temp.push(...res);
         });
         binanceOrderBookBids = JSON.parse(JSON.stringify(temp));
     });
 
+
+    binanceOrderBookAsks = [...data.asks];
+    filteredBuffer.forEach(diff => {
+        if (diff.a.length == 0) return;
+        let temp = [];
+        binanceOrderBookAsks.forEach((ask, index) => {
+            const res = updateLocalOrderBookLevel(ask, index, diff.a, 'asks');
+            if (res) temp.push(...res);
+        });
+        binanceOrderBookAsks = JSON.parse(JSON.stringify(temp));
+    });
+
+    console.log('Received orders: ', binanceOrderBookBids.length);
 }
 
-function updateLocalOrderBookLevel(level, levelIndex, diff) {
+function updateLocalOrderBookLevel(level, levelIndex, diff, type) {
     let res;
     let newLevel;
-    diff.forEach(_ => {
-        if (_[0] == level[0]) {
-            res = _;
+    diff.forEach(currentDiff => {
+        if (currentDiff[0] == level[0]) {
+            res = currentDiff;
         }
 
-        // If diff level is not equal to current level in order book, it neccessary to check if it is new one.
-        // If it's smaller then previous, and larger then next one in the order book (assuming descending order)
-        // Then it is definitelly a new level, and must be added to the list
-        if (levelIndex > 0 && levelIndex < (binanceOrderBookBids.length - 1) && _[0] != level[0]) {
-            const previousLevel = parseFloat(binanceOrderBookBids[levelIndex - 1][0]);
-            const nextLevel = parseFloat(binanceOrderBookBids[levelIndex + 1][0]);
-
-            if (parseFloat(_[0]) < previousLevel && parseFloat(_[0]) > nextLevel && parseFloat(_[1]) > 0) {
-                newLevel = _;
-            }
+        if (type == 'bids') {
+            newLevel = checkIfNewBidsLevel(level, levelIndex, currentDiff);
+        }
+        
+        if (type == 'asks') {
+            newLevel = checkIfNewAsksLevel(level, levelIndex, currentDiff);
         }
     });
 
@@ -135,6 +155,50 @@ function updateLocalOrderBookLevel(level, levelIndex, diff) {
         return [res];
     }
     return [level];
+}
+
+/**
+ * If diff level is not equal to current level in order book, it neccessary to check if it is new one. 
+ * If it's smaller then previous, and larger then next one in the order book (assuming descending order) 
+ * Then it is definitelly a new level, and must be added to the list
+ * 
+ * @param {*} level current level value
+ * @param {*} levelIndex current level index in bids/asks  
+ * @param {*} currentDiff New order book diff level
+ */
+function checkIfNewBidsLevel(level, levelIndex, currentDiff) {
+    if (levelIndex > 0 && levelIndex < (binanceOrderBookBids.length - 1) && currentDiff[0] != level[0]) {
+        const previousLevel = parseFloat(binanceOrderBookBids[levelIndex - 1][0]);
+        const nextLevel = parseFloat(binanceOrderBookBids[levelIndex + 1][0]);
+
+        if (parseFloat(currentDiff[0]) < previousLevel && parseFloat(currentDiff[0]) > nextLevel && parseFloat(currentDiff[1]) > 0) {
+            return currentDiff;
+        }
+    }
+
+    return;
+}
+
+/**
+ * If diff level is not equal to current level in order book, it neccessary to check if it is new one. 
+ * If it's larger then previous, and smaller then next one in the order book (assuming ascending order) 
+ * Then it is definitelly a new level, and must be added to the list
+ * 
+ * @param {*} level current level value
+ * @param {*} levelIndex current level index in bids/asks
+ * @param {*} currentDiff New order book diff level
+ */
+function checkIfNewAsksLevel(level, levelIndex, currentDiff) {
+    if (levelIndex > 0 && levelIndex < (binanceOrderBookAsks.length - 1) && currentDiff[0] != level[0]) {
+        const previousLevel = parseFloat(binanceOrderBookAsks[levelIndex - 1][0]);
+        const nextLevel = parseFloat(binanceOrderBookAsks[levelIndex + 1][0]);
+
+        if (parseFloat(currentDiff[0]) > previousLevel && parseFloat(currentDiff[0]) < nextLevel && parseFloat(currentDiff[1]) > 0) {
+            return currentDiff;
+        }
+    }
+
+    return;
 }
 
 function roundToClosestNumber(price, limiter) {
