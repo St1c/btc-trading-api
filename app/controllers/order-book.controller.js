@@ -13,9 +13,11 @@ setInterval(() => {
 }, 60000);
 
 async function orderLevels(ctx, next) {
+    let levelSize = ctx.request.query.levelSize || 25;
+
     ctx.body = {
-        bids: Object.entries(createOrderLevels(binanceOrderBookBids)),
-        asks: Object.entries(createOrderLevels(binanceOrderBookAsks))
+        bids: Object.entries(createOrderLevels(binanceOrderBookBids, levelSize)),
+        asks: Object.entries(createOrderLevels(binanceOrderBookAsks, levelSize))
     };
 }
 
@@ -38,13 +40,13 @@ function resetOrderBook() {
     binanceFeed.fetchOrdersBinance();
 }
 
-function createOrderLevels(orderBook) {
+function createOrderLevels(orderBook, levelSize = 25) {
     if (orderBook.length == 0) return;
 
     let levels = {};
 
     orderBook.forEach(pair => {
-        const level = roundToClosestNumber(pair[0], 25);
+        const level = roundToClosestNumber(pair[0], levelSize);
 
         if (!levels.hasOwnProperty(level)) {
             levels[level] = parseFloat(pair[1]);
