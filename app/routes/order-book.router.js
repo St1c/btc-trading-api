@@ -5,6 +5,7 @@ const router = new Router();
 
 router
     .get('/order-levels', orderBookController.orderLevels)
-    .get('/significant-orders', orderBookController.significantOrders);
+    .get('/significant-orders', orderBookController.significantOrders)
+    .get('/required-btc-percentual-changes', orderBookController.requiredBtcMovesToChangeByPercent);
 
 module.exports = router;

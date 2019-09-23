@@ -1,5 +1,7 @@
 const binanceFeed = require('../services/binance-feed');
+const bitstampFeed = require('../services/bitstamp-feed');
 
+let currentPrice;
 let binanceOrderBookAsks = [];
 let binanceOrderBookBids = [];
 let binanceOrderBookBuffer = [];
@@ -7,6 +9,7 @@ let binanceOrderBookSnapshotReady = false;
 
 binanceFeed.orderBook.subscribe(processOrderBook);
 binanceFeed.orderBookSnapshot.subscribe(processOrderBookSnapshot);
+bitstampFeed.bitstampLiveTrades.subscribe(setCurrentPrice);
 
 setInterval(() => {
     resetOrderBook();
@@ -29,6 +32,46 @@ async function significantOrders(ctx, next) {
     } else {
         ctx.body = { bids: bids, asks: asks };
     }
+}
+
+async function requiredBtcMovesToChangeByPercent(ctx, next) {
+    if (!currentPrice) {
+        ctx.body = { error: 'Current price not known yet'};
+        return;
+    }
+
+    const asks = binanceOrderBookAsks;
+    const bids = binanceOrderBookBids;
+    const onePercent = currentPrice / 100;
+
+    let asks5Percent = asks.filter(_ => parseFloat(_[0]) <= (currentPrice + (5.5 * onePercent)));
+    let asks3Percent = asks5Percent.filter(_ => parseFloat(_[0]) <= (currentPrice + (3.3 * onePercent)));
+    let asks1Percent = asks5Percent.filter(_ => parseFloat(_[0]) <= (currentPrice + (1.1 * onePercent)));
+
+    asks5Percent = asks5Percent.reduce((acc, curr) => acc + parseFloat(curr[1]), 0);
+    asks3Percent = asks3Percent.reduce((acc, curr) => acc + parseFloat(curr[1]), 0);
+    asks1Percent = asks1Percent.reduce((acc, curr) => acc + parseFloat(curr[1]), 0);
+
+    let bids5Percent = bids.filter(_ => parseFloat(_[0]) >= (currentPrice - (5.5 * onePercent)));
+    let bids3Percent = bids5Percent.filter(_ => parseFloat(_[0]) >= (currentPrice - (3.3 * onePercent)));
+    let bids1Percent = bids5Percent.filter(_ => parseFloat(_[0]) >= (currentPrice - (1.1 * onePercent)));
+        
+    bids5Percent = bids5Percent.reduce((acc, curr) => acc + parseFloat(curr[1]), 0);
+    bids3Percent = bids3Percent.reduce((acc, curr) => acc + parseFloat(curr[1]), 0);
+    bids1Percent = bids1Percent.reduce((acc, curr) => acc + parseFloat(curr[1]), 0);
+
+    ctx.body = {
+        asks: {
+            [currentPrice + (1 * onePercent)]: asks1Percent, 
+            [currentPrice + (3 * onePercent)]: asks3Percent, 
+            [currentPrice + (5 * onePercent)]: asks5Percent
+        },
+        bids: {
+            [currentPrice - (1 * onePercent)]: bids1Percent, 
+            [currentPrice - (3 * onePercent)]: bids3Percent, 
+            [currentPrice - (5 * onePercent)]: bids5Percent
+        }
+    };
 }
 
 function resetOrderBook() {
@@ -203,9 +246,25 @@ function checkIfNewAsksLevel(level, levelIndex, currentDiff) {
     return;
 }
 
+/**
+ * Round to closes defined integer value (e.g. if limiter=25, then round price=31 to 25)
+ * 
+ * @param {number} price Current price
+ * @param {number} limiter Closes integer value to round to
+ */
 function roundToClosestNumber(price, limiter) {
     return Math.round(price / limiter) * limiter;
 }
 
+/**
+ * Set current price
+ * 
+ * @param {timestamp, price} data Current price from WS stream
+ */
+function setCurrentPrice(data) {
+    currentPrice = data.price;
+}
+
 module.exports.orderLevels = orderLevels;
 module.exports.significantOrders = significantOrders;
+module.exports.requiredBtcMovesToChangeByPercent = requiredBtcMovesToChangeByPercent;
