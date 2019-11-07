@@ -4,7 +4,7 @@
   "description": "Api for BTC trading analysis",
   "main": "index.js",
   "scripts": {
-    "start": "pm2 start ecosystem.config.js -i 1 --no-daemon --watch",
+    "start": "pm2 start ecosystem.config.js --no-daemon",
     "start:production": "pm2 start ecosystem.config.js --env production --no-daemon",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
