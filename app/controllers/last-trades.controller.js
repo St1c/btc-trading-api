@@ -48,11 +48,11 @@ function processLiveTrades(data) {
 
     const decreaseRelativeToMax = Math.round(100 * (100 - (100 * data.price / max))) / 100;
     const increaseRelativeToMin = Math.round(100 * (100 * data.price / min - 100)) / 100;
-    
+
     let decreaseRelativeToNotifiedMax = lastMaxInNotification != 0 ? Math.round(100 * (100 - (100 * data.price / lastMaxInNotification))) / 100 : allowedPercentageChange;
     let increaseRelativeToNotifiedMin = lastMinInNotification != 0 ? Math.round(100 * (100 * data.price / lastMinInNotification - 100)) / 100 : allowedPercentageChange;
 
-    if ((Date.now() - lastNotificationTime) > memoryWindowLength * 1000 ) {
+    if ((Date.now() - lastNotificationTime) > memoryWindowLength * 1000) {
         decreaseRelativeToNotifiedMax = allowedPercentageChange;
         increaseRelativeToNotifiedMin = allowedPercentageChange;
     }
@@ -65,7 +65,7 @@ function processLiveTrades(data) {
         lastIntervalData.direction = data.price > priceHistory[priceHistory.length - 1].price;
     }
 
-    console.log((Date.now() - lastNotificationTime)/1000, decreaseRelativeToMax, decreaseRelativeToNotifiedMax, data.price, max);
+    console.log((Date.now() - lastNotificationTime) / 1000, decreaseRelativeToMax, decreaseRelativeToNotifiedMax, data.price, max);
     if (decreaseRelativeToMax > allowedPercentageChange && decreaseRelativeToNotifiedMax >= allowedPercentageChange) {
         lastMaxInNotification = data.price;
         lastSignificantChanges.unshift({
@@ -73,7 +73,7 @@ function processLiveTrades(data) {
             time, min, max, count, decreaseRelativeToMax, increaseRelativeToMin, price: data.price
         });
 
-        notify(`DOWN: ${ decreaseRelativeToMax }% decrease from ${ max }$ to: ${ data.price }$`);
+        notify(`DOWN: ${decreaseRelativeToMax}% decrease from ${max}$ to: ${data.price}$`);
         notifySlack(`<@UM53EKDS5> DOWN: ${decreaseRelativeToMax}% decrease from ${max}$ to: ${data.price}$`, -1);
         notifyPusher(`DOWN: ${decreaseRelativeToMax}% from ${max}$ to ${data.price}$`, decreaseRelativeToMax, -1);
     };

@@ -36,7 +36,7 @@ async function significantOrders(ctx, next) {
 
 async function requiredBtcMovesToChangeByPercent(ctx, next) {
     if (!currentPrice) {
-        ctx.body = { error: 'Current price not known yet'};
+        ctx.body = { error: 'Current price not known yet' };
         return;
     }
 
@@ -55,20 +55,20 @@ async function requiredBtcMovesToChangeByPercent(ctx, next) {
     let bids5Percent = bids.filter(_ => parseFloat(_[0]) >= (currentPrice - (5.5 * onePercent)));
     let bids3Percent = bids5Percent.filter(_ => parseFloat(_[0]) >= (currentPrice - (3.3 * onePercent)));
     let bids1Percent = bids5Percent.filter(_ => parseFloat(_[0]) >= (currentPrice - (1.1 * onePercent)));
-        
+
     bids5Percent = bids5Percent.reduce((acc, curr) => acc + parseFloat(curr[1]), 0);
     bids3Percent = bids3Percent.reduce((acc, curr) => acc + parseFloat(curr[1]), 0);
     bids1Percent = bids1Percent.reduce((acc, curr) => acc + parseFloat(curr[1]), 0);
 
     ctx.body = {
         asks: {
-            [currentPrice + (1 * onePercent)]: asks1Percent, 
-            [currentPrice + (3 * onePercent)]: asks3Percent, 
+            [currentPrice + (1 * onePercent)]: asks1Percent,
+            [currentPrice + (3 * onePercent)]: asks3Percent,
             [currentPrice + (5 * onePercent)]: asks5Percent
         },
         bids: {
-            [currentPrice - (1 * onePercent)]: bids1Percent, 
-            [currentPrice - (3 * onePercent)]: bids3Percent, 
+            [currentPrice - (1 * onePercent)]: bids1Percent,
+            [currentPrice - (3 * onePercent)]: bids3Percent,
             [currentPrice - (5 * onePercent)]: bids5Percent
         }
     };
@@ -98,8 +98,8 @@ function createOrderLevels(orderBook, levelSize = 25) {
         }
     });
 
-    Object.keys(levels).map(_ => levels[_] = Math.round(100 * levels[_])/100);
-    
+    Object.keys(levels).map(_ => levels[_] = Math.round(100 * levels[_]) / 100);
+
     return levels;
 }
 
@@ -178,7 +178,7 @@ function updateLocalOrderBookLevel(level, levelIndex, diff, type) {
         if (type == 'bids') {
             newLevel = checkIfNewBidsLevel(level, levelIndex, currentDiff);
         }
-        
+
         if (type == 'asks') {
             newLevel = checkIfNewAsksLevel(level, levelIndex, currentDiff);
         }
