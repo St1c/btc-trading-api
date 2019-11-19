@@ -2,8 +2,6 @@ version: '3.4'
 
 networks:
   backend:
-    external: 
-      name: qoestream-platform_backend
 
 volumes:
   trade_exporter_data: 
@@ -27,11 +25,11 @@ services:
     ports:
       - 3010:3010
 
-  trade-exporter-proxy:
+  proxy:
     build:
       context: ./
       dockerfile: .docker/nginx.dev.dockerfile
-    container_name: trade_exporter_proxy
+    container_name: btc_proxy
     restart: always 
     depends_on:
       - trade-exporter
