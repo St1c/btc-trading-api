@@ -15,6 +15,7 @@ services:
       context: ./
       dockerfile: .docker/api.dev.dockerfile
     container_name: trade_exporter
+    restart: always 
     image: trade-exporter:dev
     working_dir: /var/www
     volumes: 
@@ -31,6 +32,7 @@ services:
       context: ./
       dockerfile: .docker/nginx.dev.dockerfile
     container_name: trade_exporter_proxy
+    restart: always 
     depends_on:
       - trade-exporter
     volumes:
