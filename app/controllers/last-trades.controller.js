@@ -8,7 +8,7 @@ bitstampLiveTrades.subscribe(
     data => processLiveTrades(data)
 )
 
-const allowedPercentageChange = 1.09;
+const allowedPercentageChange = 2.49;
 var priceHistory = [];
 let lastIntervalData = {};
 let lastSignificantChanges = [];
